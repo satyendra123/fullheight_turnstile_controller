@@ -1,0 +1,173 @@
+// working code
+
+// opening command- AA 00 01 02 00 3E 08 00 01 00 00 00 00 00 00 4A
+// close command - AA 00 01 02 00 3E 08 00 02 00 00 00 00 00 00 4B
+
+/* i have controller to control the turnstile using the rs485. and also i am reading the feedback signal
+
+#include <SoftwareSerial.h>
+
+#define RS485_1_RX   11
+#define RS485_1_TX   10
+
+#define RS485_2_RX   9
+#define RS485_2_TX   8
+
+#define ESD_PIN       7
+#define DEVICE_ID     1
+
+SoftwareSerial RS485_1(RS485_1_RX, RS485_1_TX);
+SoftwareSerial RS485_2(RS485_2_RX, RS485_2_TX);
+
+int esdCount = 0;
+bool waitForHigh = false;
+
+void setup() {
+  Serial.begin(115200);
+  RS485_1.begin(9600);
+  RS485_2.begin(9600);
+  pinMode(ESD_PIN, INPUT_PULLUP);
+  Serial.println("System Ready: Listening for RS485_1 and ESD signal...");
+}
+
+void loop() {
+  handleESD();
+  receiveAndForwardData();
+  delay(10);
+}
+
+void handleESD() {
+  int esdState = digitalRead(ESD_PIN);
+
+  if (!waitForHigh && esdState == LOW) {
+    Serial.println("ESD LOW detected. Waiting for HIGH...");
+    waitForHigh = true;
+    delay(10);
+  } else if (waitForHigh && esdState == HIGH) {
+    Serial.println("ESD HIGH detected. Waiting for next LOW...");
+    while (digitalRead(ESD_PIN) == HIGH) delay(10);
+
+    esdCount++;
+    Serial.print("ESD Cycle Count: ");
+    Serial.println(esdCount);
+
+    sendESDCount(esdCount);
+    waitForHigh = false;
+  }
+}
+
+void sendESDCount(int count) {
+  String message = "|FROM:0" + String(DEVICE_ID) + "||ESD_CYCLE||COUNT:" + String(count) + "||FF|";
+  Serial.println("Sending ESD data to RS485_2: " + message);
+  RS485_1.print(message);
+}
+
+void receiveAndForwardData() {
+  RS485_1.listen();
+
+  if (RS485_1.available()) {
+    delay(20);
+
+    byte buffer[64];
+    int len = 0;
+
+    while (RS485_1.available() && len < sizeof(buffer)) {
+      buffer[len++] = RS485_1.read();
+    }
+
+    Serial.print("Received HEX: ");
+    for (int i = 0; i < len; i++) {
+      if (buffer[i] < 0x10) Serial.print("0");
+      Serial.print(buffer[i], HEX);
+      Serial.print(" ");
+    }
+    Serial.println();
+    forwardToTurnstile(buffer, len);
+  }
+}
+
+void forwardToTurnstile(byte* data, int len) {
+  Serial.println("Forwarding to RS485_2...");
+  for (int i = 0; i < len; i++) {
+    RS485_2.write(data[i]);
+  }
+}
+
+*/
+//EX-2
+// working code
+#include <SoftwareSerial.h>
+
+#define RS485_1_RX   11
+#define RS485_1_TX   10
+
+#define ESD_PIN       7
+#define DEVICE_ID     1
+
+SoftwareSerial RS485_1(RS485_1_RX, RS485_1_TX);
+
+int esdCount = 0;
+bool waitForHigh = false;
+
+void setup() {
+  Serial.begin(115200);
+  RS485_1.begin(9600);
+  pinMode(ESD_PIN, INPUT_PULLUP);
+  Serial.println("System Ready: Listening for RS485_1 and ESD signal...");
+}
+
+void loop() {
+  handleESD();
+  receiveAndForwardData();
+  delay(10);
+}
+
+void handleESD() {
+  int esdState = digitalRead(ESD_PIN);
+
+  if (!waitForHigh && esdState == LOW) {
+    Serial.println("ESD LOW detected. Waiting for HIGH...");
+    waitForHigh = true;
+    delay(10);
+  } else if (waitForHigh && esdState == HIGH) {
+    Serial.println("ESD HIGH detected. Waiting for next LOW...");
+    while (digitalRead(ESD_PIN) == HIGH) delay(10);
+
+    esdCount++;
+    Serial.print("ESD Cycle Count: ");
+    Serial.println(esdCount);
+
+    sendESDCount(esdCount);
+    waitForHigh = false;
+  }
+}
+
+void sendESDCount(int count) {
+  String message = "|FROM:0" + String(DEVICE_ID) + "||ESD_CYCLE||COUNT:" + String(count) + "||FF|";
+  Serial.println("Sending ESD data to RS485_2: " + message);
+  RS485_1.print(message);
+}
+
+void receiveAndForwardData() {
+  RS485_1.listen();
+
+  if (RS485_1.available()) {
+    delay(20);
+
+    byte buffer[64];
+    int len = 0;
+
+    while (RS485_1.available() && len < sizeof(buffer)) {
+      buffer[len++] = RS485_1.read();
+    }
+
+    Serial.print("Received HEX: ");
+    for (int i = 0; i < len; i++) {
+      if (buffer[i] < 0x10) Serial.print("0");
+      Serial.print(buffer[i], HEX);
+      Serial.print(" ");
+    }
+    Serial.println();
+  }
+}
+}
